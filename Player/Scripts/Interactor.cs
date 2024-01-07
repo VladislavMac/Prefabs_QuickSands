@@ -29,7 +29,11 @@ public class Interactor : MonoBehaviour
         if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
         {
             if (Input.GetKeyDown(_keyHandsDrop) && _handCurrentObjects.Count != 0) { PlayerHandsDropObjects(); };
-            if (Input.GetKeyDown(_keyHandsDrop) && _handCurrentObjects.Count == 0) { PlayerHandsDropTool(); };
+            if (Input.GetKeyDown(_keyHandsDrop) && _handCurrentTool != null) { PlayerHandsDropTool(); };
+        }
+        if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        {
+            if (Input.GetMouseButtonDown(0) && _handCurrentTool != null) { PlayerHandsUseTool(); };
         }
     }
 
@@ -50,6 +54,11 @@ public class Interactor : MonoBehaviour
             {
                 if (Input.GetKeyDown(_keyInteract) && _handCurrentObjects.Count == 0) { PlayerHandsGrabTool(hit, stateOfTool); };
 
+                _uiInteractiveCursor.SetActive(true);
+            }
+
+            if (hit.collider.TryGetComponent(out StatePalmObject stateOfPalm))
+            {
                 _uiInteractiveCursor.SetActive(true);
             }
         }
@@ -115,6 +124,10 @@ public class Interactor : MonoBehaviour
         }
     }
 
+    private void PlayerHandsUseTool()
+    {
+        _stateOfMainTool.Use(_playerCamera, _interactRange, _uiInteractiveCursor);
+    }
 
 
 

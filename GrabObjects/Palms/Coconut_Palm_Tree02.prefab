@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2394094}
   - component: {fileID: 13639464}
   - component: {fileID: 19337234}
+  - component: {fileID: 1780882143785011880}
   m_Layer: 0
   m_Name: Coconut_Palm_Tree02
   m_TagString: Untagged
@@ -29,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 107776}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 881.632, y: 106.00352, z: 762.32837}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -122,6 +123,24 @@ Tree:
   m_GameObject: {fileID: 107776}
   m_SpeedTreeWindAsset: {fileID: 0}
   m_TreeData: {fileID: 11499698, guid: 37247c6b4a4e32e4fb89832ff221ad0b, type: 2}
+--- !u!114 &1780882143785011880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 107776}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c0ae557322099b4689a591bafe92f20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TypePalmObject: Palm_2
+  AmountWoodLog: 5
+  AmountAxeHit: 10
+  ParentWoodLog: {fileID: 0}
+  WoodLog: {fileID: 6268029596581166958, guid: 6645f800b6cf6144dbd9b74b91510c75, type: 3}
+  IsPalmFell: 0
 --- !u!1 &977177650363357523
 GameObject:
   m_ObjectHideFlags: 0
