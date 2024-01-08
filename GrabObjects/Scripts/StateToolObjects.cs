@@ -4,46 +4,50 @@ using UnityEngine;
 
 public class StateToolObjects : MonoBehaviour
 {
+    public Vector3 ToolPosition = new Vector3(0, 0, 0);
+    public Vector3 ToolRotation = new Vector3(0, 0, 0);
+
     public bool IsPlayerGrabbing = false;
-    public readonly Vector3 ToolPosition = new Vector3(0.032f, 0.136f, -0.182f);
-    public readonly Vector3 ToolRotation = new Vector3(172.014f, 0.9530029f, -38.83801f);
 
-    private StatePalmObject _stateOfPalmObject;
-
-    public void Use(Camera playerCamera, float interactRange, GameObject uiInteractiveCursor )
+    public void Grab(GameObject playerHands, Transform parentCurrentObjects, GameObject hitObject)
     {
-        Ray ray = playerCamera.ScreenPointToRay(new Vector2(Screen.width / 2, Screen.height / 2));
+        hitObject.layer = LayerMask.NameToLayer("Hands");
 
-        if (Physics.Raycast(ray, out RaycastHit hit, interactRange))
+        if (!hitObject.TryGetComponent(out Rigidbody component))
         {
-            if (hit.collider.TryGetComponent(out StatePalmObject stateOfObject))
-            {
-                if (stateOfObject.AmountAxeHit == 0)
-                {
-                    hit.collider.gameObject.GetComponent<Rigidbody>().isKinematic = false;
-                    stateOfObject.IsPalmFell = true;
-                }
-                
-                if (stateOfObject.AmountAxeHit < -stateOfObject.AmountAxeHit)
-                {
-                    Vector3 PalmPosition = new Vector3(hit.collider.transform.position.x, hit.collider.transform.position.y, hit.collider.transform.position.z);
+            hitObject.AddComponent<Rigidbody>();
+        }
 
-                    for (int i = 0; i < stateOfObject.AmountWoodLog; i++)
-                    {
-                        PalmPosition += new Vector3(0, 1.7f, 0);
+        hitObject.GetComponent<Rigidbody>().isKinematic = true;
+        hitObject.GetComponent<BoxCollider>().enabled = false;
 
-                        GameObject newWoodObject = Instantiate(stateOfObject.WoodLog);
-                        newWoodObject.transform.parent = stateOfObject.ParentWoodLog;
-                        newWoodObject.transform.position = PalmPosition;
-                        newWoodObject.transform.localEulerAngles = new Vector3(0, 0, 0);
-                        newWoodObject.GetComponent<Rigidbody>().isKinematic = false;
-                    }
+        hitObject.transform.parent = playerHands.transform;
+        hitObject.transform.localPosition = ToolPosition;
+        hitObject.transform.localEulerAngles = ToolRotation;
+    }
+    public void Drop(Camera playerCamera, GameObject handCurrentTool, Transform parentCurrentObjects)
+    {
+        handCurrentTool.layer = LayerMask.NameToLayer("Default");
+        handCurrentTool.transform.parent = parentCurrentObjects;
 
-                    Destroy(hit.collider.gameObject);
-                }
-                
-                stateOfObject.AmountAxeHit--;
-            }
+        handCurrentTool.GetComponent<Rigidbody>().isKinematic = false;
+        handCurrentTool.GetComponent<BoxCollider>().enabled = true;
+
+        handCurrentTool.GetComponent<StateToolObjects>().IsPlayerGrabbing = false;
+        handCurrentTool.GetComponent<Rigidbody>().AddForce(playerCamera.transform.forward * 10);
+
+        handCurrentTool = null;
+    }
+
+    public void Use(Camera playerCamera, float interactRange, GameObject uiInteractiveCursor)
+    {
+        if (TryGetComponent(out UseScript script))
+        {
+            script.ScriptRun(playerCamera, interactRange, uiInteractiveCursor);
+        }
+        else
+        {
+            return;
         }
     }
 }

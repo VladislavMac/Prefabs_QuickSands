@@ -15,12 +15,12 @@ public class Interactor : MonoBehaviour
     [SerializeField] private float _interactRange = 2;
 
     private List<GameObject> _handCurrentObjects = new List<GameObject>();
-    private GameObject _handCurrentTool;
+    [SerializeField] private GameObject _handCurrentTool;
 
     private Transform _parentCurrentObjects;
 
     private StateGrabObjects _stateOfMainObject;
-    private StateToolObjects _stateOfMainTool;
+    [SerializeField] private StateToolObjects _stateOfMainTool;
 
     private void Update()
     {
@@ -31,7 +31,7 @@ public class Interactor : MonoBehaviour
             if (Input.GetKeyDown(_keyHandsDrop) && _handCurrentObjects.Count != 0) { PlayerHandsDropObjects(); };
             if (Input.GetKeyDown(_keyHandsDrop) && _handCurrentTool != null) { PlayerHandsDropTool(); };
         }
-        if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty && _handCurrentObjects.Count == 0)
         {
             if (Input.GetMouseButtonDown(0) && _handCurrentTool != null) { PlayerHandsUseTool(); };
         }
@@ -68,8 +68,6 @@ public class Interactor : MonoBehaviour
         }
     }
 
-
-
     private void PlayerHandsGrabTool(RaycastHit hit, StateToolObjects stateOfTool)
     {
         if (_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
@@ -79,55 +77,35 @@ public class Interactor : MonoBehaviour
 
             _playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty = false;
         }
-        else if(!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        else if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
         {
             return;
         }
 
         GameObject hitObject = hit.collider.gameObject;
 
-        hitObject.layer = LayerMask.NameToLayer("Hands");
-
-        if (!hitObject.TryGetComponent(out Rigidbody component))
-        {
-            hitObject.AddComponent<Rigidbody>();
-        }
-
-        hitObject.GetComponent<Rigidbody>().isKinematic = true;
-        hitObject.GetComponent<MeshCollider>().enabled = false;
-
-        hitObject.transform.parent = _playerHands.transform;
-        hitObject.transform.localPosition = _stateOfMainTool.ToolPosition;
-        hitObject.transform.localEulerAngles = _stateOfMainTool.ToolRotation;
+        _stateOfMainTool.Grab(_playerHands, _parentCurrentObjects, hitObject);
 
         _handCurrentTool = hitObject;
-
         _stateOfMainTool.IsPlayerGrabbing = true;
     }
+
     private void PlayerHandsDropTool()
     {
         if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
         {
-            _handCurrentTool.layer = LayerMask.NameToLayer("Default");
-            _handCurrentTool.transform.parent = _parentCurrentObjects;
+            _stateOfMainTool.Drop(_playerCamera, _handCurrentTool, _parentCurrentObjects);
 
-            _handCurrentTool.GetComponent<Rigidbody>().isKinematic = false;
-            _handCurrentTool.GetComponent<MeshCollider>().enabled = true;
-
-            _handCurrentTool.GetComponent<StateToolObjects>().IsPlayerGrabbing = false;
-            _handCurrentTool.GetComponent<Rigidbody>().AddForce(_playerCamera.transform.forward * 10);
-
-            _handCurrentTool = null;
             _stateOfMainTool = null;
 
             _playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty = true;
         }
     }
-
     private void PlayerHandsUseTool()
     {
         _stateOfMainTool.Use(_playerCamera, _interactRange, _uiInteractiveCursor);
     }
+
 
 
 
@@ -148,41 +126,16 @@ public class Interactor : MonoBehaviour
 
         GameObject hitObject = hit.collider.gameObject;
 
-        hitObject.layer = LayerMask.NameToLayer("Hands");
-
-        if (!hitObject.TryGetComponent(out Rigidbody component))
-        {
-            hitObject.AddComponent<Rigidbody>();
-        }
-
-        hitObject.GetComponent<Rigidbody>().isKinematic = true;
-        hitObject.GetComponent<MeshCollider>().enabled = false;
-
-        hitObject.transform.parent = _playerHands.transform;
-        hitObject.transform.localPosition = Vector3.zero;
-
-        _handCurrentObjects.Add(hitObject);
-
-        stateOfObject.IsPlayerGrabbing = true;
+        stateOfObject.Grab(hitObject, _playerHands, _handCurrentObjects);
     }
     private void PlayerHandsDropObjects()
     {
         if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
         {
-            for (int i = 0; i < _handCurrentObjects.Count; i++)
-            {
-                _handCurrentObjects[i].layer = LayerMask.NameToLayer("Default");
-                _handCurrentObjects[i].transform.parent = _parentCurrentObjects;
+            _stateOfMainObject.Drop(_playerCamera, _handCurrentObjects, _parentCurrentObjects);
 
-                _handCurrentObjects[i].GetComponent<Rigidbody>().isKinematic = false;
-                _handCurrentObjects[i].GetComponent<MeshCollider>().enabled = true;
-
-                _handCurrentObjects[i].GetComponent<StateGrabObjects>().IsPlayerGrabbing = false;
-                _handCurrentObjects[i].GetComponent<Rigidbody>().AddForce(_playerCamera.transform.forward * 10);
-            }
-
-            _handCurrentObjects.Clear();
             _stateOfMainObject = null;
+
             _playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty = true;
         }
     }
