@@ -28,7 +28,6 @@ public class StateGrabObjects : MonoBehaviour
         hitObject.transform.parent = playerHands.transform;
         hitObject.transform.localPosition = Vector3.zero;
 
-        handCurrentObjects.Add(hitObject);
         IsPlayerGrabbing = true;
     }
 
@@ -43,9 +42,7 @@ public class StateGrabObjects : MonoBehaviour
             handCurrentObjects[i].GetComponent<MeshCollider>().enabled = true;
 
             handCurrentObjects[i].GetComponent<StateGrabObjects>().IsPlayerGrabbing = false;
-            handCurrentObjects[i].GetComponent<Rigidbody>().AddForce(playerCamera.transform.forward * 10);
+            handCurrentObjects[i].GetComponent<Rigidbody>().AddForce(playerCamera.transform.forward * 20f);
         }
-
-        handCurrentObjects.Clear();
     }
 }

@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ControllerCamera : MonoBehaviour
+public class CameraController : MonoBehaviour
 {
+    public float _rotationX = 0;
+    public float _lookXLimit = 90.0f;
+
     [SerializeField] private float _lookSpeed = 2.0f;
     [SerializeField] private Camera _playerCamera;
-
-    private float _rotationX = 0;
-    private float _lookXLimit = 90.0f;
 
     private void Start()
     {

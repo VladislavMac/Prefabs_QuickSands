@@ -14,26 +14,23 @@ public class Interactor : MonoBehaviour
 
     [SerializeField] private float _interactRange = 2;
 
-    private List<GameObject> _handCurrentObjects = new List<GameObject>();
-    [SerializeField] private GameObject _handCurrentTool;
-
+    private HandsScript _hands;
     private Transform _parentCurrentObjects;
-
-    private StateGrabObjects _stateOfMainObject;
-    [SerializeField] private StateToolObjects _stateOfMainTool;
 
     private void Update()
     {
+        _hands = _playerHands.GetComponent<HandsScript>();
+
         Interactive();
 
-        if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        if (!_hands.IsEmpty)
         {
-            if (Input.GetKeyDown(_keyHandsDrop) && _handCurrentObjects.Count != 0) { PlayerHandsDropObjects(); };
-            if (Input.GetKeyDown(_keyHandsDrop) && _handCurrentTool != null) { PlayerHandsDropTool(); };
+            if (Input.GetKeyDown(_keyHandsDrop) && _hands.CurrentObjects.Count != 0) { PlayerHandsDropObjects(); };
+            if (Input.GetKeyDown(_keyHandsDrop) && _hands.CurrentTool != null) { PlayerHandsDropTool(); };
         }
-        if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty && _handCurrentObjects.Count == 0)
+        if (!_hands.IsEmpty && _hands.CurrentObjects.Count == 0)
         {
-            if (Input.GetMouseButtonDown(0) && _handCurrentTool != null) { PlayerHandsUseTool(); };
+            if (Input.GetMouseButtonDown(0) && _hands.CurrentTool != null) { PlayerHandsUseTool(); };
         }
     }
 
@@ -45,14 +42,14 @@ public class Interactor : MonoBehaviour
         {
             if (hit.collider.TryGetComponent(out StateGrabObjects stateOfObject) )
             {
-                if (Input.GetKeyDown(_keyInteract) && _handCurrentTool == null) { PlayerHandsGrabObject(hit, stateOfObject); };
+                if (Input.GetKeyDown(_keyInteract) && _hands.CurrentTool == null) { PlayerHandsGrabObject(hit, stateOfObject); };
 
                 _uiInteractiveCursor.SetActive(true);
             }
 
             if (hit.collider.TryGetComponent(out StateToolObjects stateOfTool)) 
             {
-                if (Input.GetKeyDown(_keyInteract) && _handCurrentObjects.Count == 0) { PlayerHandsGrabTool(hit, stateOfTool); };
+                if (Input.GetKeyDown(_keyInteract) && _hands.CurrentObjects.Count == 0) { PlayerHandsGrabTool(hit, stateOfTool); };
 
                 _uiInteractiveCursor.SetActive(true);
             }
@@ -70,73 +67,82 @@ public class Interactor : MonoBehaviour
 
     private void PlayerHandsGrabTool(RaycastHit hit, StateToolObjects stateOfTool)
     {
-        if (_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        if (_hands.IsEmpty)
         {
-            _stateOfMainTool = stateOfTool;
+            _hands.StateMainTool = stateOfTool;
             _parentCurrentObjects = hit.transform.parent;
 
-            _playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty = false;
+            _hands.IsEmpty = false;
         }
-        else if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        else if (!_hands.IsEmpty)
         {
             return;
         }
 
         GameObject hitObject = hit.collider.gameObject;
 
-        _stateOfMainTool.Grab(_playerHands, _parentCurrentObjects, hitObject);
+        _hands.StateMainTool.Grab(_playerHands, _parentCurrentObjects, hitObject);
 
-        _handCurrentTool = hitObject;
-        _stateOfMainTool.IsPlayerGrabbing = true;
+        _hands.CurrentTool = hitObject;
+        _hands.CurrentType = "Tool";
+
+        _hands.StateMainTool.IsPlayerGrabbing = true;
     }
 
     private void PlayerHandsDropTool()
     {
-        if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        if (!_hands.IsEmpty)
         {
-            _stateOfMainTool.Drop(_playerCamera, _handCurrentTool, _parentCurrentObjects);
+            _hands.StateMainTool.Drop(_playerCamera, _hands.CurrentTool, _parentCurrentObjects);
 
-            _stateOfMainTool = null;
+            _hands.CurrentTool = null;
+            _hands.StateMainTool = null;
 
-            _playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty = true;
+            _hands.CurrentType = null;
+
+            _hands.IsEmpty = true;
         }
     }
     private void PlayerHandsUseTool()
     {
-        _stateOfMainTool.Use(_playerCamera, _interactRange, _uiInteractiveCursor);
+        _hands.StateMainTool.Use(_playerCamera, _interactRange, _uiInteractiveCursor);
     }
-
-
-
 
     private void PlayerHandsGrabObject(RaycastHit hit, StateGrabObjects stateOfObject)
     {
-        if (_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        if (_hands.IsEmpty)
         {
-            _stateOfMainObject = stateOfObject;
+            _hands.StateMainObject = stateOfObject;
             _parentCurrentObjects = hit.transform.parent;
 
-            _playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty = false;
+            _hands.IsEmpty = false;
         }
-        else if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        else if (!_hands.IsEmpty)
         {
-            if (_stateOfMainObject.TypeGrabObject != stateOfObject.TypeGrabObject) return;
-            if (_stateOfMainObject.HandsMaxAmoutObject <= _handCurrentObjects.Count) return;
+            if (_hands.StateMainObject.TypeGrabObject != stateOfObject.TypeGrabObject) return;
+            if (_hands.StateMainObject.HandsMaxAmoutObject <= _hands.CurrentObjects.Count) return;
         }
 
         GameObject hitObject = hit.collider.gameObject;
 
-        stateOfObject.Grab(hitObject, _playerHands, _handCurrentObjects);
+        stateOfObject.Grab(hitObject, _playerHands, _hands.CurrentObjects);
+
+        _hands.CurrentObjects.Add(hitObject);
+
+        _hands.CurrentType = "Objects";
     }
+
     private void PlayerHandsDropObjects()
     {
-        if (!_playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty)
+        if (!_hands.IsEmpty)
         {
-            _stateOfMainObject.Drop(_playerCamera, _handCurrentObjects, _parentCurrentObjects);
+            _hands.StateMainObject.Drop(_playerCamera, _hands.CurrentObjects, _parentCurrentObjects);
 
-            _stateOfMainObject = null;
+            _hands.CurrentObjects.Clear();
+            _hands.StateMainObject = null;
+            _hands.CurrentType = null;
 
-            _playerHands.GetComponent<IsHandsEmpty>().isHandsEmpty = true;
+            _hands.IsEmpty = true;
         }
     }
 }
