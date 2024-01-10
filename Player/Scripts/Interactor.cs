@@ -67,41 +67,12 @@ public class Interactor : MonoBehaviour
 
     private void PlayerHandsGrabTool(RaycastHit hit, StateToolObjects stateOfTool)
     {
-        if (_hands.IsEmpty)
-        {
-            _hands.StateMainTool = stateOfTool;
-            _parentCurrentObjects = hit.transform.parent;
-
-            _hands.IsEmpty = false;
-        }
-        else if (!_hands.IsEmpty)
-        {
-            return;
-        }
-
-        GameObject hitObject = hit.collider.gameObject;
-
-        _hands.StateMainTool.Grab(_playerHands, _parentCurrentObjects, hitObject);
-
-        _hands.CurrentTool = hitObject;
-        _hands.CurrentType = "Tool";
-
-        _hands.StateMainTool.IsPlayerGrabbing = true;
+        _hands.GrabTool(hit, stateOfTool);
     }
 
     private void PlayerHandsDropTool()
     {
-        if (!_hands.IsEmpty)
-        {
-            _hands.StateMainTool.Drop(_playerCamera, _hands.CurrentTool, _parentCurrentObjects);
-
-            _hands.CurrentTool = null;
-            _hands.StateMainTool = null;
-
-            _hands.CurrentType = null;
-
-            _hands.IsEmpty = true;
-        }
+        _hands.DropTool(_playerCamera);
     }
     private void PlayerHandsUseTool()
     {
@@ -110,39 +81,11 @@ public class Interactor : MonoBehaviour
 
     private void PlayerHandsGrabObject(RaycastHit hit, StateGrabObjects stateOfObject)
     {
-        if (_hands.IsEmpty)
-        {
-            _hands.StateMainObject = stateOfObject;
-            _parentCurrentObjects = hit.transform.parent;
-
-            _hands.IsEmpty = false;
-        }
-        else if (!_hands.IsEmpty)
-        {
-            if (_hands.StateMainObject.TypeGrabObject != stateOfObject.TypeGrabObject) return;
-            if (_hands.StateMainObject.HandsMaxAmoutObject <= _hands.CurrentObjects.Count) return;
-        }
-
-        GameObject hitObject = hit.collider.gameObject;
-
-        stateOfObject.Grab(hitObject, _playerHands, _hands.CurrentObjects);
-
-        _hands.CurrentObjects.Add(hitObject);
-
-        _hands.CurrentType = "Objects";
+        _hands.GrabObject(hit, stateOfObject);
     }
 
     private void PlayerHandsDropObjects()
     {
-        if (!_hands.IsEmpty)
-        {
-            _hands.StateMainObject.Drop(_playerCamera, _hands.CurrentObjects, _parentCurrentObjects);
-
-            _hands.CurrentObjects.Clear();
-            _hands.StateMainObject = null;
-            _hands.CurrentType = null;
-
-            _hands.IsEmpty = true;
-        }
+        _hands.DropObjects(_playerCamera);
     }
 }

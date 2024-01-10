@@ -72,6 +72,27 @@ public class SlotsScript : MonoBehaviour
             _hands.StateMainTool = null;
             _hands.IsEmpty = true;
         }
+        else if (currentSlotState.Tool.transform.childCount > 0)
+        {
+            _hands.CurrentTool.transform.parent = currentSlotState.Tool.transform;
+            _hands.CurrentTool.layer = LayerMask.NameToLayer("Hands");
+
+            _hands.CurrentTool.GetComponent<Rigidbody>().isKinematic = true;
+            _hands.CurrentTool.GetComponent<BoxCollider>().enabled = false;
+
+            _hands.CurrentTool.transform.localPosition = Vector3.zero;
+            _hands.CurrentTool.transform.localEulerAngles = Vector3.zero;
+            _hands.CurrentTool.transform.localScale = new Vector3(_hands.CurrentTool.transform.localScale.x / 2, _hands.CurrentTool.transform.localScale.y / 2, _hands.CurrentTool.transform.localScale.z / 2);
+
+            _hands.CurrentTool = null;
+            _hands.CurrentType = null;
+
+            _hands.StateMainTool.IsPlayerGrabbing = false;
+            _hands.StateMainTool = null;
+            _hands.IsEmpty = true;
+
+            this.GrabSlot(slotNumber);
+        }
     }
 
     private void GrabSlot(int slotNumber)
